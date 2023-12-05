@@ -2,6 +2,89 @@ use std::{collections::HashMap};
 
 use regex::Regex;
 
+fn word_forms_to_number(word_form: impl Into<String>) -> Vec<u64> {
+    // instructions say to leave out zero and anything above nine.
+    let number_lookup: HashMap<&str, u64> = HashMap::from([
+        ("one", 1),
+        ("two", 2),
+        ("three", 3),
+        ("four", 4),
+        ("five", 5),
+        ("six", 6),
+        ("seven", 7),
+        ("eight", 8),
+        ("nine", 9),
+    ]);
+
+    let re =
+        Regex::new(r"(one|1|two|2|three|3|four|4|five|5|six|6|seven|7|eight|8|nine|9)").unwrap();
+    let values = re.find_iter(word_form.into().as_str()).map(|iter| {
+        match iter.as_str().parse::<u64>() {
+            Ok(n) => n,
+            Err(_) => {
+                number_lookup[iter.as_str()]
+            }
+        }
+    }).collect();
+    values
+}
+
+fn calc_total(cal_values: &str) -> u64 {
+    let mut total: u64 = 0;
+    cal_values.split_whitespace().map(|cal| {
+        let cal_values = word_forms_to_number(cal);
+        let value = format!("{}{}", cal_values[0], cal_values[cal_values.len() - 1])
+            .parse::<u64>()
+            .unwrap();
+        total += value;
+        //println!("value: {value} {total} {cal_values:?} {cal}");
+        value
+    }).sum()
+}
+
+fn main() {
+    let total = calc_total(CAL_DOC);
+    println!("Total: {total}");
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn example_verify() {
+        const VALUES: &str = "two1nine
+        eightwothree
+        abcone2threexyz
+        xtwone3four
+        4nineeightseven2
+        zoneight234
+        7pqrstsixteen";
+
+        let total = calc_total(VALUES);
+        assert_eq!(total, 281);
+    }
+
+    #[test]
+    fn test_word_forms_to_number() {
+        const VALUES: &str = "two1nine
+        eightwothree
+        abcone2threexyz
+        xtwone3four
+        4nineeightseven2
+        zoneight234
+        7pqrstsixteen";
+
+        assert_eq!(word_forms_to_number("two1nine"), vec![2, 1, 9]);
+        assert_eq!(word_forms_to_number("eightwothree"), vec![8, 3]);
+        assert_eq!(word_forms_to_number("abcone2threexyz"), vec![1, 2, 3]);
+        assert_eq!(word_forms_to_number("xtwone3four"), vec![2, 3, 4]);
+        assert_eq!(word_forms_to_number("4nineeightseven2"), vec![4, 9, 8, 7, 2]);
+        assert_eq!(word_forms_to_number("zoneight234"), vec![1, 2, 3, 4]);
+        assert_eq!(word_forms_to_number("7pqrstsixteen"), vec![7, 6]);
+    }
+}
+
 const CAL_DOC: &str = "sixrrmlkptmc18zhvninek
 jcb82eightwond
 twofourthree778nineeight
@@ -1002,86 +1085,3 @@ eightone9nbdrkonenine8
 3two5lbrb43nine7
 foursix5eightfivezvnbsevenjcrzhxdzfb2
 jmgnfive7ffglffpjlvbtvl935zz";
-
-fn word_forms_to_number(word_form: impl Into<String>) -> Vec<u64> {
-    // instructions say to leave out zero and anything above nine.
-    let number_lookup: HashMap<&str, u64> = HashMap::from([
-        ("one", 1),
-        ("two", 2),
-        ("three", 3),
-        ("four", 4),
-        ("five", 5),
-        ("six", 6),
-        ("seven", 7),
-        ("eight", 8),
-        ("nine", 9),
-    ]);
-
-    let re =
-        Regex::new(r"(one|1|two|2|three|3|four|4|five|5|six|6|seven|7|eight|8|nine|9)").unwrap();
-    let values = re.find_iter(word_form.into().as_str()).map(|iter| {
-        match iter.as_str().parse::<u64>() {
-            Ok(n) => n,
-            Err(_) => {
-                number_lookup[iter.as_str()]
-            }
-        }
-    }).collect();
-    values
-}
-
-fn calc_total(cal_values: &str) -> u64 {
-    let mut total: u64 = 0;
-    cal_values.split_whitespace().map(|cal| {
-        let cal_values = word_forms_to_number(cal);
-        let value = format!("{}{}", cal_values[0], cal_values[cal_values.len() - 1])
-            .parse::<u64>()
-            .unwrap();
-        total += value;
-        //println!("value: {value} {total} {cal_values:?} {cal}");
-        value
-    }).sum()
-}
-
-fn main() {
-    let total = calc_total(CAL_DOC);
-    println!("Total: {total}");
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn example_verify() {
-        const VALUES: &str = "two1nine
-        eightwothree
-        abcone2threexyz
-        xtwone3four
-        4nineeightseven2
-        zoneight234
-        7pqrstsixteen";
-
-        let total = calc_total(VALUES);
-        assert_eq!(total, 281);
-    }
-
-    #[test]
-    fn test_word_forms_to_number() {
-        const VALUES: &str = "two1nine
-        eightwothree
-        abcone2threexyz
-        xtwone3four
-        4nineeightseven2
-        zoneight234
-        7pqrstsixteen";
-
-        assert_eq!(word_forms_to_number("two1nine"), vec![2, 1, 9]);
-        assert_eq!(word_forms_to_number("eightwothree"), vec![8, 3]);
-        assert_eq!(word_forms_to_number("abcone2threexyz"), vec![1, 2, 3]);
-        assert_eq!(word_forms_to_number("xtwone3four"), vec![2, 3, 4]);
-        assert_eq!(word_forms_to_number("4nineeightseven2"), vec![4, 9, 8, 7, 2]);
-        assert_eq!(word_forms_to_number("zoneight234"), vec![1, 2, 3, 4]);
-        assert_eq!(word_forms_to_number("7pqrstsixteen"), vec![7, 6]);
-    }
-}
