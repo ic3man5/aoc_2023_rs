@@ -2,21 +2,8 @@ use std::{collections::HashMap};
 
 use regex::Regex;
 
-fn word_forms_to_number(word_form: impl Into<String>) -> Vec<u64> {
-    // instructions say to leave out zero and anything above nine.
-    let number_lookup: HashMap<&str, u64> = HashMap::from([
-        ("one", 1),
-        ("two", 2),
-        ("three", 3),
-        ("four", 4),
-        ("five", 5),
-        ("six", 6),
-        ("seven", 7),
-        ("eight", 8),
-        ("nine", 9),
-    ]);
-    
-    // We don't have a way to do overlapped regex in rust (or must languages for that matter). 
+fn word_forms_to_number(word_form: impl Into<String>) -> Vec<u64> {    
+    // We don't have a way to do overlapped regex in rust (or most languages for that matter). 
     // So lets leave the beginning and end letter...
     let word_form = word_form.into()
         .replace("one", "o1e")
@@ -30,12 +17,12 @@ fn word_forms_to_number(word_form: impl Into<String>) -> Vec<u64> {
         .replace("nine", "n9e");
 
     let re =
-        Regex::new(r"(\d)").unwrap();
+        Regex::new(r"\d").unwrap();
     let values = re.find_iter(word_form.as_str()).map(|iter| {
         match iter.as_str().parse::<u64>() {
             Ok(n) => n,
             Err(_) => {
-                number_lookup[iter.as_str()]
+                panic!("Not a valid number!");
             }
         }
     }).collect();
