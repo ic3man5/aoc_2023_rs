@@ -15,10 +15,23 @@ fn word_forms_to_number(word_form: impl Into<String>) -> Vec<u64> {
         ("eight", 8),
         ("nine", 9),
     ]);
+    
+    // We don't have a way to do overlapped regex in rust (or must languages for that matter). 
+    // So lets leave the beginning and end letter...
+    let word_form = word_form.into()
+        .replace("one", "o1e")
+        .replace("two", "t2o")
+        .replace("three", "t3e")
+        .replace("four", "f4r")
+        .replace("five", "f5e")
+        .replace("six", "s6x")
+        .replace("seven", "s7n")
+        .replace("eight", "e8t")
+        .replace("nine", "n9e");
 
     let re =
-        Regex::new(r"(one|1|two|2|three|3|four|4|five|5|six|6|seven|7|eight|8|nine|9)").unwrap();
-    let values = re.find_iter(word_form.into().as_str()).map(|iter| {
+        Regex::new(r"(\d)").unwrap();
+    let values = re.find_iter(word_form.as_str()).map(|iter| {
         match iter.as_str().parse::<u64>() {
             Ok(n) => n,
             Err(_) => {
@@ -67,21 +80,16 @@ mod tests {
 
     #[test]
     fn test_word_forms_to_number() {
-        const VALUES: &str = "two1nine
-        eightwothree
-        abcone2threexyz
-        xtwone3four
-        4nineeightseven2
-        zoneight234
-        7pqrstsixteen";
-
         assert_eq!(word_forms_to_number("two1nine"), vec![2, 1, 9]);
-        assert_eq!(word_forms_to_number("eightwothree"), vec![8, 3]);
+        assert_eq!(word_forms_to_number("eightwothree"), vec![8, 2, 3]);
         assert_eq!(word_forms_to_number("abcone2threexyz"), vec![1, 2, 3]);
-        assert_eq!(word_forms_to_number("xtwone3four"), vec![2, 3, 4]);
+        assert_eq!(word_forms_to_number("xtwone3four"), vec![2, 1, 3, 4]);
         assert_eq!(word_forms_to_number("4nineeightseven2"), vec![4, 9, 8, 7, 2]);
-        assert_eq!(word_forms_to_number("zoneight234"), vec![1, 2, 3, 4]);
+        assert_eq!(word_forms_to_number("zoneight234"), vec![1, 8, 2, 3, 4]);
         assert_eq!(word_forms_to_number("7pqrstsixteen"), vec![7, 6]);
+        assert_eq!(word_forms_to_number("jcb82eightwond"), vec![8, 2, 8, 2]);
+
+        assert_eq!(calc_total("jcb82eightwond"), 82);
     }
 }
 
